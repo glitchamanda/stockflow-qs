@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block content %}<h1>Categorias</h1><a class="btn btn-primary mb-3" href="{% url 'category-create' %}">Nova categoria</a><ul>{% for category in categories %}<li>{{ category.name }} ({{ category.products.count }} produtos)</li>{% empty %}<li>Nenhuma categoria.</li>{% endfor %}</ul>{% endblock %}

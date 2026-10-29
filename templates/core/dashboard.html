@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block content %}<h1>Dashboard</h1><div class="row g-3">
+{% for label,value in cards %}<div class="col-md-4"><div class="card card-body"><small>{{ label }}</small><strong class="fs-3">{{ value }}</strong></div></div>{% endfor %}
+<div class="col-md-4"><div class="card card-body"><small>Produtos cadastrados</small><strong class="fs-3">{{ product_count }}</strong></div></div>
+<div class="col-md-4"><div class="card card-body"><small>Unidades em estoque</small><strong class="fs-3">{{ stock_total }}</strong></div></div>
+<div class="col-md-4"><div class="card card-body"><small>Produtos com estoque baixo</small><strong class="fs-3">{{ low_stock }}</strong></div></div>
+<div class="col-md-4"><div class="card card-body"><small>Pedidos pendentes</small><strong class="fs-3">{{ pending_orders }}</strong></div></div>
+<div class="col-md-4"><div class="card card-body"><small>Total dos pedidos</small><strong class="fs-3">R$ {{ orders_total }}</strong></div></div>
+</div>{% endblock %}
