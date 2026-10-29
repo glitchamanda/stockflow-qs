@@ -1,4 +1,5 @@
 import pytest
+from django.core.management import call_command
 from django.urls import reverse
 from products.models import Category, Product
 
@@ -50,3 +51,11 @@ def test_order_pages_create_and_cancel(client):
     assert response.status_code == 302
     product.refresh_from_db()
     assert product.stock_quantity == 3
+
+
+@pytest.mark.django_db
+def test_seed_demo_is_idempotent_and_creates_expected_data():
+    call_command("seed_demo")
+    call_command("seed_demo")
+    assert Category.objects.count() == 3
+    assert Product.objects.count() == 6
