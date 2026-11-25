@@ -173,6 +173,10 @@ O workflow está localizado em:
 
 `.github/workflows/ci.yml`
 
+O workflow é acionado por push para `main` e por pull requests direcionados a
+`main`. Portanto, para validar uma branch de trabalho sem enviar diretamente
+para a branch principal, abra um pull request com destino a `main`.
+
 O pipeline contempla quatro verificações principais:
 
 1. **Validação do Django e das migrações:** verifica problemas de configuração e inconsistências nas migrações.
@@ -183,6 +187,30 @@ O pipeline contempla quatro verificações principais:
 Quando uma verificação obrigatória falha, o job deve ser reprovado. O workflow também gera um relatório de cobertura em formato XML, disponibilizado como artefato da execução conforme a configuração do pipeline.
 
 Essas verificações funcionam como *quality gates*, ajudando a impedir que alterações que não atendam aos critérios definidos sejam consideradas aprovadas.
+
+### Validação local e evidências do CI
+
+Antes de enviar uma alteração, é possível executar localmente as mesmas
+verificações principais do workflow:
+
+```powershell
+python manage.py check
+python manage.py makemigrations --check --dry-run
+ruff check .
+python -m pytest --cov=products --cov=inventory --cov=orders --cov-report=term-missing --cov-report=xml --cov-fail-under=80
+```
+
+Uma execução local ajuda a encontrar problemas antes do push, mas não substitui
+a evidência da execução na plataforma. Para registrar o resultado do trabalho,
+acesse a aba **Actions** do repositório, abra a execução vinculada ao push ou ao
+pull request e guarde o link e o resultado de cada etapa. O relatório
+`coverage.xml` é publicado como artefato da execução quando o workflow termina.
+
+Para exigir que as verificações aprovadas sejam necessárias antes de integrar
+um pull request, configure uma regra de proteção da branch `main` nas
+configurações do repositório e marque o status check do job `quality` como
+obrigatório. Sem essa regra, o workflow ainda informa sucesso ou falha, mas o
+GitHub pode não impedir o merge automaticamente.
 
 ## Demonstração do QAOps
 
