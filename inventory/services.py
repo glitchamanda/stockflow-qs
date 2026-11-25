@@ -11,8 +11,6 @@ def move_stock(product_id, movement_type, quantity, reason, order=None):
     if quantity <= 0:
         raise ValidationError("A quantidade deve ser maior que zero.")
     product = Product.objects.select_for_update().get(pk=product_id)
-    if movement_type == StockMovement.MovementType.OUT and product.stock_quantity < quantity:
-        raise ValidationError("Estoque insuficiente para realizar a saída.")
     delta = quantity if movement_type == StockMovement.MovementType.IN else -quantity
     product.stock_quantity += delta
     product.save(update_fields=["stock_quantity"])
