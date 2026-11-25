@@ -11,7 +11,9 @@ def test_dashboard_uses_database(client):
     response = client.get(reverse("dashboard"))
     assert response.status_code == 200
     assert response.context["product_count"] == 1
+    assert response.context["stock_value_total"] == 50
     assert response.context["low_stock"] == 1
+    assert b"R$ 50,00" in response.content
 
 
 @pytest.mark.django_db
