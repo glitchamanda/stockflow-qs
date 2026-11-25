@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from .forms import OrderForm
 from .models import Order
-from .services import cancel_order, create_order
+from .services import cancel_order, complete_order, create_order
 
 
 def order_list(request):
@@ -35,4 +35,15 @@ def order_cancel(request, pk):
             messages.error(request, error.message)
         else:
             messages.success(request, "Pedido cancelado e estoque devolvido.")
+    return redirect("order-detail", pk=pk)
+
+
+def order_complete(request, pk):
+    if request.method == "POST":
+        try:
+            complete_order(pk)
+        except ValidationError as error:
+            messages.error(request, error.message)
+        else:
+            messages.success(request, "Pedido concluído.")
     return redirect("order-detail", pk=pk)

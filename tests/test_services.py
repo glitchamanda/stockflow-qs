@@ -5,7 +5,7 @@ from django.db import transaction
 from inventory.models import StockMovement
 from inventory.services import move_stock
 from orders.models import Order
-from orders.services import cancel_order, create_order
+from orders.services import cancel_order, complete_order, create_order
 from products.models import Category, Product
 
 
@@ -58,6 +58,26 @@ def test_cancel_returns_stock_only_once(product):
     product.refresh_from_db()
     assert product.stock_quantity == 10
     assert StockMovement.objects.filter(movement_type="IN").count() == 1
+
+
+def test_complete_order_changes_pending_status_without_changing_stock(product):
+    order = create_order([(product.pk, 3)])
+
+    complete_order(order.pk)
+    complete_order(order.pk)
+
+    order.refresh_from_db()
+    product.refresh_from_db()
+    assert order.status == Order.Status.COMPLETED
+    assert product.stock_quantity == 7
+
+
+def test_cancelled_order_cannot_be_completed(product):
+    order = create_order([(product.pk, 3)])
+    cancel_order(order.pk)
+
+    with pytest.raises(ValidationError):
+        complete_order(order.pk)
 
 
 def test_duplicate_sku_is_rejected(product):

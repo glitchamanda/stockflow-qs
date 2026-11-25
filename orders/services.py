@@ -44,3 +44,15 @@ def cancel_order(order_id):
     order.status = Order.Status.CANCELLED
     order.save(update_fields=["status"])
     return order
+
+
+@transaction.atomic
+def complete_order(order_id):
+    order = Order.objects.select_for_update().get(pk=order_id)
+    if order.status == Order.Status.COMPLETED:
+        return order
+    if order.status != Order.Status.PENDING:
+        raise ValidationError("Somente pedidos pendentes podem ser concluídos.")
+    order.status = Order.Status.COMPLETED
+    order.save(update_fields=["status"])
+    return order

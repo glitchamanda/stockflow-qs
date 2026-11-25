@@ -1,6 +1,7 @@
 import pytest
 from django.core.management import call_command
 from django.urls import reverse
+from orders.models import Order
 from products.models import Category, Product
 
 
@@ -56,6 +57,28 @@ def test_order_pages_create_and_cancel(client):
     assert response.status_code == 302
     product.refresh_from_db()
     assert product.stock_quantity == 3
+
+
+@pytest.mark.django_db
+def test_order_can_be_completed_from_detail(client):
+    category = Category.objects.create(name="Casa")
+    product = Product.objects.create(name="Copo", sku="C-3", category=category, price="4.00", stock_quantity=3)
+    response = client.post(reverse("order-create"), {"product": product.pk, "quantity": 2})
+    order_id = response.url.rstrip("/").split("/")[-1]
+
+    response = client.get(reverse("order-detail", kwargs={"pk": order_id}))
+    assert b"Finalizar pedido" in response.content
+
+    response = client.post(reverse("order-complete", kwargs={"pk": order_id}))
+
+    assert response.status_code == 302
+    order = Order.objects.get(pk=order_id)
+    assert order.status == Order.Status.COMPLETED
+    response = client.get(reverse("order-detail", kwargs={"pk": order_id}))
+    assert "Concluído" in response.content.decode()
+    assert b"Finalizar pedido" not in response.content
+    product.refresh_from_db()
+    assert product.stock_quantity == 1
 
 
 @pytest.mark.django_db
