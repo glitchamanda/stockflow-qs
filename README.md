@@ -32,21 +32,29 @@ O StockFlow reúne as principais operações necessárias para o controle de est
 - Pesquisa por nome ou código SKU.
 - Validação dos preços e das quantidades em estoque.
 - Identificação de produtos com estoque abaixo do mínimo definido.
+- Proteção contra exclusão de produtos que possuem histórico.
+- Filtros combináveis por texto, categoria e estoque baixo.
 
 ### Movimentações de estoque
 
 - Registro de entradas e saídas de produtos.
 - Consulta ao histórico de movimentações.
 - Validação das quantidades movimentadas.
+- Rejeição de tipos de movimentação inválidos.
 - Prevenção de operações que deixariam o estoque negativo.
 
 ### Pedidos
 
 - Criação e consulta de pedidos.
+- Inclusão de vários produtos no mesmo pedido pela interface.
 - Cálculo dos valores dos itens e do total do pedido.
 - Verificação da disponibilidade dos produtos.
+- Rejeição de produtos repetidos em linhas diferentes do mesmo pedido.
 - Atualização do estoque durante a criação do pedido.
+- Transições de status: pendente para confirmado, confirmado para concluído;
+  pedidos pendentes ou confirmados também podem ser cancelados.
 - Cancelamento com devolução do estoque, sem duplicar a movimentação.
+- Impedimento de excluir categorias que ainda possuem produtos.
 
 O preço de cada item é registrado no momento da criação do pedido. Dessa forma, uma alteração posterior no preço do produto não modifica o valor de um pedido já registrado.
 
@@ -153,6 +161,10 @@ pytest --cov=products --cov=inventory --cov=orders --cov-report=term-missing --c
 
 A meta definida para o projeto é alcançar pelo menos 80% de cobertura nos módulos selecionados. A ferramenta também verifica automaticamente se o percentual mínimo foi atingido.
 
+Os testes também cobrem filtros combinados, formulários inválidos, exclusões
+protegidas por histórico, pedidos com vários itens e transições válidas e
+inválidas de status.
+
 ## Pipeline de integração contínua
 
 O projeto utiliza GitHub Actions para executar verificações de qualidade automaticamente nos eventos configurados no repositório.
@@ -216,11 +228,12 @@ O StockFlow foi desenvolvido com foco no contexto acadêmico e na demonstração
 Entre as limitações atuais estão:
 
 - O sistema não possui autenticação de usuários.
-- O formulário de criação de pedidos permite adicionar apenas um item por pedido na interface atual, embora o serviço de negócio aceite múltiplos itens.
 - O SQLite é utilizado para simplificar a execução local e os testes, mas um ambiente de produção exigiria uma avaliação mais aprofundada das necessidades de concorrência, persistência e configuração.
 - O pipeline verifica os critérios de qualidade definidos, mas não substitui uma revisão manual do código nem garante a ausência de todos os defeitos.
 
-Como evoluções futuras, seria possível implementar autenticação e permissões, permitir a inclusão de vários itens diretamente no formulário de pedidos, ampliar os testes e adicionar verificações de segurança das dependências.
+Como evoluções futuras, seria possível implementar autenticação e permissões,
+ampliar os testes de concorrência e adicionar verificações de segurança das
+dependências.
 
 ## Considerações finais
 

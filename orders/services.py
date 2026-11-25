@@ -9,6 +9,9 @@ from .models import Order, OrderItem
 def create_order(items):
     if not items:
         raise ValidationError("O pedido deve conter pelo menos um item.")
+    product_ids = [product_id for product_id, _ in items]
+    if len(product_ids) != len(set(product_ids)):
+        raise ValidationError("Um produto não pode aparecer mais de uma vez no pedido.")
     order = Order.objects.create()
     for product_id, quantity in items:
         if quantity <= 0:
@@ -27,12 +30,32 @@ def create_order(items):
 
 
 @transaction.atomic
+def confirm_order(order_id):
+    order = Order.objects.select_for_update().get(pk=order_id)
+    if order.status != Order.Status.PENDING:
+        raise ValidationError("Somente pedidos pendentes podem ser confirmados.")
+    order.status = Order.Status.CONFIRMED
+    order.save(update_fields=["status"])
+    return order
+
+
+@transaction.atomic
+def complete_order(order_id):
+    order = Order.objects.select_for_update().get(pk=order_id)
+    if order.status != Order.Status.CONFIRMED:
+        raise ValidationError("Somente pedidos confirmados podem ser concluídos.")
+    order.status = Order.Status.COMPLETED
+    order.save(update_fields=["status"])
+    return order
+
+
+@transaction.atomic
 def cancel_order(order_id):
     order = Order.objects.select_for_update().get(pk=order_id)
     if order.status == Order.Status.CANCELLED:
         return order
-    if order.status == Order.Status.COMPLETED:
-        raise ValidationError("Pedidos concluídos não podem ser cancelados.")
+    if order.status not in (Order.Status.PENDING, Order.Status.CONFIRMED):
+        raise ValidationError("Somente pedidos pendentes ou confirmados podem ser cancelados.")
     for item in order.items.select_related("product"):
         product = Product.objects.select_for_update().get(pk=item.product_id)
         product.stock_quantity += item.quantity

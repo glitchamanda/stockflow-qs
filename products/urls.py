@@ -9,4 +9,5 @@ urlpatterns = [
     path("<int:pk>/excluir/", views.product_delete, name="product-delete"),
     path("categorias/", views.category_list, name="category-list"),
     path("categorias/nova/", views.category_create, name="category-create"),
+    path("categorias/<int:pk>/excluir/", views.category_delete, name="category-delete"),
 ]

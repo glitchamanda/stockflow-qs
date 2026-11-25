@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 from .forms import StockMovementForm
 from .models import StockMovement
@@ -16,8 +17,8 @@ def movement_create(request):
         try:
             data = form.cleaned_data
             move_stock(data["product"].pk, data["movement_type"], data["quantity"], data["reason"])
-        except Exception as error:
-            form.add_error(None, str(error))
+        except ValidationError as error:
+            form.add_error(None, error.message)
         else:
             messages.success(request, "Movimentação registrada.")
             return redirect("movement-list")

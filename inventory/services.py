@@ -6,6 +6,8 @@ from .models import StockMovement
 
 @transaction.atomic
 def move_stock(product_id, movement_type, quantity, reason, order=None):
+    if movement_type not in StockMovement.MovementType.values:
+        raise ValidationError("Tipo de movimentação inválido.")
     if quantity <= 0:
         raise ValidationError("A quantidade deve ser maior que zero.")
     product = Product.objects.select_for_update().get(pk=product_id)

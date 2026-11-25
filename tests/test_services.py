@@ -5,7 +5,7 @@ from django.db import transaction
 from inventory.models import StockMovement
 from inventory.services import move_stock
 from orders.models import Order
-from orders.services import cancel_order, create_order
+from orders.services import cancel_order, complete_order, confirm_order, create_order
 from products.models import Category, Product
 
 
@@ -85,6 +85,51 @@ def test_negative_stock_and_movement_quantity_are_rejected(product):
         move_stock(product.pk, "IN", 0, "Carga inválida")
 
 
+def test_invalid_movement_type_is_rejected_without_changes(product):
+    with pytest.raises(ValidationError):
+        move_stock(product.pk, "TRANSFER", 2, "Tipo desconhecido")
+    product.refresh_from_db()
+    assert product.stock_quantity == 10
+    assert not StockMovement.objects.exists()
+
+
 def test_order_with_non_positive_quantity_is_rejected(product):
     with pytest.raises(ValidationError):
         create_order([(product.pk, 0)])
+
+
+def test_duplicate_product_in_order_is_rejected_atomically(product):
+    with pytest.raises(ValidationError, match="mais de uma vez"):
+        create_order([(product.pk, 2), (product.pk, 1)])
+    product.refresh_from_db()
+    assert product.stock_quantity == 10
+    assert not Order.objects.exists()
+    assert not StockMovement.objects.exists()
+
+
+def test_order_status_transitions_and_invalid_transitions(product):
+    order = create_order([(product.pk, 1)])
+    with pytest.raises(ValidationError):
+        complete_order(order.pk)
+
+    confirm_order(order.pk)
+    with pytest.raises(ValidationError):
+        confirm_order(order.pk)
+    complete_order(order.pk)
+    with pytest.raises(ValidationError):
+        cancel_order(order.pk)
+
+    order.refresh_from_db()
+    assert order.status == Order.Status.COMPLETED
+    product.refresh_from_db()
+    assert product.stock_quantity == 9
+
+
+def test_confirmed_order_can_be_cancelled_and_returns_stock(product):
+    order = create_order([(product.pk, 2)])
+    confirm_order(order.pk)
+    cancel_order(order.pk)
+    order.refresh_from_db()
+    product.refresh_from_db()
+    assert order.status == Order.Status.CANCELLED
+    assert product.stock_quantity == 10

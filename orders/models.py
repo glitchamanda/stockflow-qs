@@ -30,4 +30,7 @@ class OrderItem(models.Model):
         return self.unit_price * self.quantity
 
     class Meta:
-        constraints = [models.CheckConstraint(condition=models.Q(quantity__gt=0), name="order_item_quantity_positive")]
+        constraints = [
+            models.CheckConstraint(condition=models.Q(quantity__gt=0), name="order_item_quantity_positive"),
+            models.UniqueConstraint(fields=["order", "product"], name="unique_product_per_order"),
+        ]
