@@ -1,0 +1,5 @@
+git fetch origin
+git checkout 4-criar-campo-de-custo-no-produto
+
+git fetch origin
+git checkout 5-criar-total-de-custo-na-tela-principal

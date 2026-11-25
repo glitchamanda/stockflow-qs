@@ -28,10 +28,13 @@ def test_product_create_and_movement_pages(client):
     category = Category.objects.create(name="Casa")
     response = client.post(reverse("product-create"), {
         "name": "Prato", "sku": "P-1", "category": category.pk,
-        "price": "10.00", "minimum_stock": 1,
+        "price": "10.00", "cost": "6.25", "minimum_stock": 1,
     })
     assert response.status_code == 302
     product = Product.objects.get(sku="P-1")
+    assert str(product.cost) == "6.25"
+    response = client.get(reverse("product-detail", kwargs={"pk": product.pk}))
+    assert b"6,25" in response.content
     response = client.post(reverse("movement-create"), {
         "product": product.pk, "movement_type": "IN", "quantity": 5, "reason": "Compra",
     })
