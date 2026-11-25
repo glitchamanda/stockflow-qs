@@ -28,7 +28,7 @@ def test_product_create_and_movement_pages(client):
     category = Category.objects.create(name="Casa")
     response = client.post(reverse("product-create"), {
         "name": "Prato", "sku": "P-1", "category": category.pk,
-        "price": "10.00", "minimum_stock": 1,
+        "price": "10.00", "cost": "5.00", "minimum_stock": 1,
     })
     assert response.status_code == 302
     product = Product.objects.get(sku="P-1")
@@ -38,6 +38,29 @@ def test_product_create_and_movement_pages(client):
     assert response.status_code == 302
     product.refresh_from_db()
     assert product.stock_quantity == 5
+
+
+@pytest.mark.django_db
+def test_product_update_rejects_cost_above_sale_price(client):
+    category = Category.objects.create(name="Casa")
+    product = Product.objects.create(
+        name="Caneca", sku="C-3", category=category, price="20.00", cost="10.00",
+    )
+
+    response = client.post(reverse("product-update", kwargs={"pk": product.pk}), {
+        "name": product.name,
+        "description": product.description,
+        "sku": product.sku,
+        "category": category.pk,
+        "price": "20.00",
+        "cost": "25.00",
+        "minimum_stock": product.minimum_stock,
+    })
+
+    assert response.status_code == 200
+    assert response.context["form"].has_error("cost")
+    product.refresh_from_db()
+    assert product.cost == 10
 
 
 @pytest.mark.django_db
