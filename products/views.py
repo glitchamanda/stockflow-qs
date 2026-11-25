@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.db.models.deletion import ProtectedError
 from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from .forms import CategoryForm, ProductForm
@@ -12,11 +13,19 @@ def product_list(request):
     stock = request.GET.get("stock", "")
     if query:
         products = products.filter(Q(name__icontains=query) | Q(sku__icontains=query))
-    if category:
+    if category and category.isdecimal():
         products = products.filter(category_id=category)
+    elif category:
+        products = products.none()
     if stock == "low":
         products = products.filter(stock_quantity__lte=F("minimum_stock"))
-    return render(request, "products/product_list.html", {"products": products, "categories": Category.objects.all()})
+    return render(request, "products/product_list.html", {
+        "products": products,
+        "categories": Category.objects.all(),
+        "query": query,
+        "selected_category": category,
+        "stock_filter": stock,
+    })
 
 
 def product_create(request):
@@ -45,7 +54,11 @@ def product_update(request, pk):
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
-        product.delete()
+        try:
+            product.delete()
+        except ProtectedError:
+            messages.error(request, "Este produto possui histórico e não pode ser excluído.")
+            return redirect("product-list")
         messages.success(request, "Produto excluído.")
         return redirect("product-list")
     return render(request, "confirm_delete.html", {"object": product})
@@ -59,5 +72,19 @@ def category_create(request):
     form = CategoryForm(request.POST or None)
     if form.is_valid():
         form.save()
+        messages.success(request, "Categoria cadastrada.")
         return redirect("category-list")
     return render(request, "form.html", {"form": form, "title": "Nova categoria"})
+
+
+def category_delete(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == "POST":
+        try:
+            category.delete()
+        except ProtectedError:
+            messages.error(request, "A categoria possui produtos e não pode ser excluída.")
+        else:
+            messages.success(request, "Categoria excluída.")
+        return redirect("category-list")
+    return render(request, "confirm_delete.html", {"object": category})

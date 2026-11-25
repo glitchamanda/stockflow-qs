@@ -21,7 +21,8 @@ class Product(models.Model):
     sku = models.CharField("SKU", max_length=40, unique=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     price = models.DecimalField("preço", max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))])
-    cost = models.DecimalField("custo", max_digits=10, decimal_places=2, default=Decimal("0.00"), validators=[MinValueValidator(Decimal("0.00"))])
+    cost = models.DecimalField("custo", max_digits=10, decimal_places=2, default=Decimal("0.00"), blank=True, validators=[MinValueValidator(Decimal("0.00"))])
+
     stock_quantity = models.PositiveIntegerField("estoque", default=0)
     minimum_stock = models.PositiveIntegerField("estoque mínimo", default=0)
     created_at = models.DateTimeField("cadastrado em", auto_now_add=True)
@@ -31,7 +32,9 @@ class Product(models.Model):
         constraints = [
             models.CheckConstraint(condition=models.Q(price__gt=0), name="product_price_positive"),
             models.CheckConstraint(condition=models.Q(cost__gte=0), name="product_cost_nonnegative"),
+
             models.CheckConstraint(condition=models.Q(cost__lte=models.F("price")), name="product_cost_not_above_price"),
+
             models.CheckConstraint(condition=models.Q(stock_quantity__gte=0), name="product_stock_nonnegative"),
             models.CheckConstraint(condition=models.Q(minimum_stock__gte=0), name="product_minimum_nonnegative"),
         ]

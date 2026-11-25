@@ -1,1 +1,23 @@
-{% extends "base.html" %}{% block content %}<h1>Pedido #{{ order.pk }}</h1><p>Status: <strong>{{ order.get_status_display }}</strong></p><table class="table"><tr><th>Produto</th><th>Quantidade</th><th>Preço unitário</th><th>Subtotal</th></tr>{% for item in order.items.all %}<tr><td>{{ item.product }}</td><td>{{ item.quantity }}</td><td>R$ {{ item.unit_price }}</td><td>R$ {{ item.subtotal }}</td></tr>{% endfor %}</table><p class="fs-4">Total: R$ {{ order.total }}</p>{% if order.status != "CANCELLED" and order.status != "COMPLETED" %}<form method="post" action="{% url 'order-cancel' order.pk %}">{% csrf_token %}<button class="btn btn-danger">Cancelar pedido</button></form>{% endif %}{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<h1>Pedido #{{ order.pk }}</h1>
+<p>Status: <strong>{{ order.get_status_display }}</strong></p>
+<table class="table">
+  <tr><th>Produto</th><th>Quantidade</th><th>Preço unitário</th><th>Subtotal</th></tr>
+  {% for item in order.items.all %}
+    <tr><td>{{ item.product }}</td><td>{{ item.quantity }}</td><td>R$ {{ item.unit_price }}</td><td>R$ {{ item.subtotal }}</td></tr>
+  {% empty %}
+    <tr><td colspan="4">Este pedido não possui itens.</td></tr>
+  {% endfor %}
+</table>
+<p class="fs-4">Total: R$ {{ order.total }}</p>
+{% if order.status == "PENDING" %}
+  <form method="post" action="{% url 'order-confirm' order.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-success">Confirmar pedido</button></form>
+{% endif %}
+{% if order.status == "CONFIRMED" %}
+  <form method="post" action="{% url 'order-complete' order.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-primary">Concluir pedido</button></form>
+{% endif %}
+{% if order.status == "PENDING" or order.status == "CONFIRMED" %}
+  <form method="post" action="{% url 'order-cancel' order.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-danger">Cancelar pedido</button></form>
+{% endif %}
+{% endblock %}

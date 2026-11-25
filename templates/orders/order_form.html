@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ title }}</h1>
+<form method="post" class="card card-body">
+  {% csrf_token %}
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}
+    <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+  {% endif %}
+  <div id="order-items">
+    {% for form in formset %}
+      <div class="order-item row g-3 mb-3">
+        <div class="col-md-8">
+          <label class="form-label" for="{{ form.product.id_for_label }}">Produto</label>
+          {{ form.product }}
+          {{ form.product.errors }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.quantity.id_for_label }}">Quantidade</label>
+          {{ form.quantity }}
+          {{ form.quantity.errors }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <template id="empty-order-item">
+    <div class="order-item row g-3 mb-3">
+      <div class="col-md-8">
+        <label class="form-label">Produto</label>
+        {{ formset.empty_form.product }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Quantidade</label>
+        {{ formset.empty_form.quantity }}
+      </div>
+    </div>
+  </template>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-secondary" type="button" id="add-order-item">Adicionar produto</button>
+    <button class="btn btn-primary" type="submit">Criar pedido</button>
+  </div>
+</form>
+<script>
+  document.getElementById("add-order-item").addEventListener("click", function () {
+    const totalForms = document.getElementById("id_items-TOTAL_FORMS");
+    const index = Number(totalForms.value);
+    const template = document.getElementById("empty-order-item").innerHTML;
+    document.getElementById("order-items").insertAdjacentHTML(
+      "beforeend",
+      template.replace(/__prefix__/g, index)
+    );
+    totalForms.value = index + 1;
+  });
+</script>
+{% endblock %}
