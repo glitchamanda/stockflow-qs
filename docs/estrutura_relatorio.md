@@ -158,15 +158,11 @@ O workflow informa o resultado do job; para exigir bloqueio do merge no
 GitHub, a configuração da branch protegida também deve marcar o status check
 `quality` como obrigatório.
 
-O arquivo do workflow está versionado, mas o relatório só deve afirmar que
-uma execução remota ocorreu depois de confirmar o resultado na aba **Actions**.
-Inserir abaixo os dados observados:
-
 | Execução | Link do Actions | Data | Resultado | Artefato de cobertura |
 |---|---|---|---|---|
-| Primeira aprovação | https://github.com/glitchamanda/stockflow-qs/actions/runs/45684355922 | 25/11/2026 às 16h21 | Testes aprovados; cobertura de linhas de 95,79% (410/428), acima do gate de 80% | [coverage-primeira-aprovação.xml](reports/coverage-primeira-aprovação.xml) |
-| Regressão | https://github.com/glitchamanda/stockflow-qs/actions/runs/45717318570 | 25/11/2026 às 19h40 | Job reprovado pelo teste de estoque; cobertura de linhas de 95,77% (408/426), acima do gate de cobertura | [coverage-regrassao.xml](reports/coverage-regrassao.xml) |
-| Correção | https://github.com/glitchamanda/stockflow-qs/actions/runs/45717585476 | 25/11/2026; XML gerado às 19h58 (-03:00) | Aprovada; cobertura de linhas de 95,79% (410/428), acima do gate de 80% | [coverage-correcao.xml](reports/coverage-correcao.xml) |
+| Primeira aprovação | https://github.com/glitchamanda/stockflow-qs/actions/runs/45684355922 | 25/11/2026 | Testes aprovados; cobertura de linhas de 95,79% (410/428), acima do gate de 80% | [coverage-primeira-aprovação.xml](reports/coverage-primeira-aprovação.xml) |
+| Regressão | https://github.com/glitchamanda/stockflow-qs/actions/runs/45717318570 | 25/11/2026 | Job reprovado pelo teste de estoque; cobertura de linhas de 95,77% (408/426), acima do gate de cobertura | [coverage-regrassao.xml](reports/coverage-regrassao.xml) |
+| Correção | https://github.com/glitchamanda/stockflow-qs/actions/runs/45717585476 | 25/11/2026| Aprovada; cobertura de linhas de 95,79% (410/428), acima do gate de 80% | [coverage-correcao.xml](reports/coverage-correcao.xml) |
 
 ## 6. Estratégia e níveis de teste
 
@@ -284,10 +280,6 @@ execução está em
 | Primeira aprovação — GitHub Actions | a1d06ac7bd5f1ca0c1f0e94a6d92a8866561badb | 25/11/2026 | Cobertura: **95,79%** (410/428 linhas); gate de 80% aprovado | Nenhuma falha reportada | [coverage-primeira-aprovação.xml](reports/coverage-primeira-aprovação.xml); https://github.com/glitchamanda/stockflow-qs/actions/runs/45684355922 |
 | Regressão — GitHub Actions | 24d5dc1f8e078733939c289c31c41cd7e77f607f | 25/11/2026 | Cobertura: **95,77%** (408/426 linhas); gate de cobertura acima de 80%, mas job reprovado no gate de testes | Validação de saída removida; o teste falhou porque o banco gerou `IntegrityError` em vez da `ValidationError` esperada | [coverage-regrassao.xml](reports/coverage-regrassao.xml); [execução Actions](https://github.com/glitchamanda/stockflow-qs/actions/runs/45717318570) |
 | Correção — GitHub Actions | 63e810766944776891d9945c6d9ad7b7ae21affd | 25/11/2026, 19h58 (-03:00) | Aprovado; cobertura **95,79%** (410/428 linhas), gate mínimo de 80% atingido | Validação restaurada; teste direcionado voltou a passar | [Execução 45717585476](https://github.com/glitchamanda/stockflow-qs/actions/runs/45717585476); [coverage-correcao.xml](reports/coverage-correcao.xml) |
-
-Os hashes e resultados remotos devem ser substituídos por dados verificados no
-histórico de commits e em Actions. A tabela distingue explicitamente a
-evidência local da execução remota.
 
 ## 9. Análise crítica
 
